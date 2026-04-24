@@ -153,4 +153,6 @@ int main() {
                 break;      
         }
     }while(option != 5);
+
+    cout << "Test";
 }
