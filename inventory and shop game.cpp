@@ -8,7 +8,7 @@ struct items {
     int price;
     int quantity;
 };
-
+        
 items shopItems[] = {
     {"Black Sword", "Weapon", "Long Sword", 500, 7},
     {"Blood Reaper", "Weapon", "Scythe", 1000, 5},
@@ -17,7 +17,32 @@ items shopItems[] = {
 
 int num_shopItems = sizeof(shopItems)/sizeof(shopItems[0]);
 items inventoryItems[10];
-int inventoryCount = 0;
+
+int inputInt(string prompt) {
+    string input;
+    int value;
+
+    while(true) {
+        cout << prompt;
+        getline(cin, input);
+
+        bool valid = true;
+
+        for(char c : input) {
+            if(!isdigit(c)) {
+                valid = false;
+                break;
+            }
+        }
+
+        if(valid && !input.empty()) {
+            value = stoi(input);
+            return value;
+        } else {
+            cout << "Input must be a number only!" << endl;
+        }
+    }
+}
 
 void viewItems() {
     for(int i = 0; i < num_shopItems ; i++) {
@@ -38,7 +63,11 @@ void buyItems(int *inventoryCount) {
     int choice, buyQuantity;
 
     viewItems();
-    cout << "Choose item number: "; cin >> choice;
+    choice = inputInt("Choose item number (0 to cancel): ");
+
+    if(choice == 0) {
+        return;
+    }
 
     if(choice < 1 || choice > num_shopItems) {
         cout << "Invalid item number!" << endl;
@@ -47,7 +76,11 @@ void buyItems(int *inventoryCount) {
 
     int index = choice - 1;
 
-    cout << "Enter quantity: "; cin >> buyQuantity;
+    buyQuantity = inputInt("Enter quantity (0 to cancel): "); 
+
+    if( buyQuantity == 0) {
+        return;
+    }
 
     if(shopItems[index].quantity < buyQuantity) {
         cout << "Not enough stock!" << endl;
@@ -68,15 +101,15 @@ void buyItems(int *inventoryCount) {
     cout << "Item purchased!" << endl;
 }
 
-void viewInventory() {
-    for(int i = 0; i < inventoryCount; i++) {
+void viewInventory(int *inventoryCount) {
+    for(int i = 0; i < *inventoryCount; i++) {
         cout << i + 1 << ". "
              << inventoryItems[i].name << " x"
              << inventoryItems[i].quantity << endl;
     }
 }
 
-void shop() {
+void shop(int *inventoryCount) {
     int option;
 
     do{
@@ -85,7 +118,7 @@ void shop() {
         cout << "2. Search Items" << endl;
         cout << "3. Buy Items"    << endl;
         cout << "4. Back"         << endl;
-        cout << "Enter Options: "; cin >> option;
+        option = inputInt("Enter option: ");
 
         switch(option) {
             case 1: 
@@ -95,7 +128,7 @@ void shop() {
                 searchItems();
                 break;
             case 3:
-                buyItems(&inventoryCount);
+                buyItems(inventoryCount);
                 break;
             default:
                 break;      
@@ -104,7 +137,7 @@ void shop() {
 
 }
 
-void inventory() {
+void inventory(int *inventoryCount) {
     int option;
 
     do {
@@ -112,11 +145,11 @@ void inventory() {
         cout << "1. View Inventory" << endl;
         cout << "2. Sort Items"     << endl;
         cout << "3. Back"           << endl;
-        cout << "Enter Options: "; cin >> option;
+        option = inputInt("Enter option: ");
 
         switch(option) {
             case 1:    
-                viewInventory();          
+                viewInventory(inventoryCount);          
                 break;
             case 2:
                 break;
@@ -128,6 +161,7 @@ void inventory() {
 
 int main() {
     int option;
+    int inventoryCount = 0;
 
     do {
         cout << "=== MANAGEMENT INVENTORY ERPEGE GAME === "  << endl;
@@ -136,14 +170,14 @@ int main() {
         cout << "3. Save Game" << endl;
         cout << "4. Load Game" << endl;
         cout << "5. Exit"      << endl;
-        cout << "Enter Options: "; cin >> option;
+        option = inputInt("Enter option: ");
 
         switch(option) {
             case 1:
-                shop();
+                shop(&inventoryCount);
                 break;
             case 2:
-                inventory();
+                inventory(&inventoryCount);
                 break;
             case 3:
                 break;
