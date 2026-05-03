@@ -1,5 +1,33 @@
 #include <iostream>
+#include <termios.h>
+#include <unistd.h>
 using namespace std;
+
+void clearScreen() {
+    #ifdef _WIN32
+        system("cls");
+    #elif defined(__linux__) || defined(__APPLE__)
+        system("clear");
+    #else
+        std::cout << "\n" << std::endl; // Fallback for unknown systems
+    #endif
+}
+
+void waitAnyKey() {
+    struct termios oldt, newt;
+    std::cout << "\n[ Tekan tombol apa saja untuk lanjut ]" << std::flush;
+    
+    tcgetattr(STDIN_FILENO, &oldt);
+    newt = oldt;
+    newt.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+    
+    getchar(); // Menunggu satu input karakter
+    
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+    std::cout << std::endl;
+    clearScreen();
+}
 
 struct items {
     string name;
@@ -17,6 +45,7 @@ items shopItems[] = {
 
 int num_shopItems = sizeof(shopItems)/sizeof(shopItems[0]);
 items inventoryItems[10];
+int inventoryCount = 0;
 
 int inputInt(string prompt) {
     string input;
@@ -44,7 +73,9 @@ int inputInt(string prompt) {
     }
 }
 
-void viewItems() {
+void viewItems(bool isBuy = false) {
+    clearScreen();
+
     for(int i = 0; i < num_shopItems ; i++) {
         cout << i + 1 << ". "
         << shopItems[i].name << " - "
@@ -53,6 +84,10 @@ void viewItems() {
         << shopItems[i].price << " Gold - Stock: "
         << shopItems[i].quantity << endl;
     }
+
+    if (!isBuy){
+        waitAnyKey();
+    }
 }
 
 void searchItems(){
@@ -60,9 +95,11 @@ void searchItems(){
 }
 
 void buyItems(int *inventoryCount) {
+    clearScreen();
     int choice, buyQuantity;
+    bool isBuy = true;
 
-    viewItems();
+    viewItems(isBuy);
     choice = inputInt("Choose item number (0 to cancel): ");
 
     if(choice == 0) {
@@ -102,14 +139,22 @@ void buyItems(int *inventoryCount) {
 }
 
 void viewInventory(int *inventoryCount) {
-    for(int i = 0; i < *inventoryCount; i++) {
-        cout << i + 1 << ". "
-             << inventoryItems[i].name << " x"
-             << inventoryItems[i].quantity << endl;
-    }
+    clearScreen();
+    if(*inventoryCount == 0) {
+        cout << "Inventory Kosong" << endl;
+        waitAnyKey();
+    } else {
+        for(int i = 0; i < *inventoryCount; i++) {
+            cout << i + 1 << ". "
+                << inventoryItems[i].name << " x"
+                << inventoryItems[i].quantity << endl;
+        }
+        waitAnyKey();
+    };
 }
 
 void shop(int *inventoryCount) {
+    clearScreen();
     int option;
 
     do{
@@ -134,10 +179,12 @@ void shop(int *inventoryCount) {
                 break;      
         }
     }while(option != 4);
+    clearScreen();
 
 }
 
 void inventory(int *inventoryCount) {
+    clearScreen();
     int option;
 
     do {
@@ -157,6 +204,7 @@ void inventory(int *inventoryCount) {
                 break;      
         }
     }while(option != 3);
+    clearScreen();
 }
 
 int main() {
@@ -187,6 +235,7 @@ int main() {
                 break;      
         }
     }while(option != 5);
+    clearScreen();
 
     cout << "Test";
 }
